@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.moa.chatapp",
+    "sha256_cert_fingerprints": [
+      "70:52:55:86:AE:24:00:E8:C8:79:11:DD:44:E3:AD:A6:54:1E:26:58:6D:91:63:89:5C:94:2B:D8:46:69:DB:5E"
+    ]
+  }
+}]
