@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MOA Chat 초대</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f8f8f8;
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 20px;
+    }
+    .card {
+      background: #fff; border-radius: 20px; padding: 44px 28px;
+      max-width: 360px; width: 100%; text-align: center;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    }
+    .icon { font-size: 52px; margin-bottom: 10px; }
+    .app-name { font-size: 24px; font-weight: 800; color: #111; margin-bottom: 6px; }
+    .subtitle { font-size: 15px; color: #666; margin-bottom: 36px; line-height: 1.5; }
+    .btn {
+      display: block; width: 100%; padding: 15px;
+      border-radius: 12px; font-size: 16px; font-weight: 600;
+      text-decoration: none; margin-bottom: 12px;
+      border: none; cursor: pointer;
+    }
+    .btn-primary { background: #FF6B35; color: #fff; }
+    .btn-secondary { background: #f0f0f0; color: #333; }
+    .hint { font-size: 12px; color: #aaa; margin-top: 16px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">💬</div>
+    <div class="app-name">MOA Chat</div>
+    <div class="subtitle" id="msg">그룹 채팅에 초대받으셨습니다!</div>
+    <a class="btn btn-primary" id="openBtn" href="#">앱에서 열기</a>
+    <a class="btn btn-secondary" id="installBtn" href="#">앱 설치하기</a>
+    <div class="hint" id="hint">앱이 설치되어 있으면 자동으로 열립니다.<br>설치되지 않은 경우 스토어로 이동합니다.</div>
+  </div>
+
+  <script>
+    var path = window.location.pathname;
+    var match = path.match(/\/invite\/([A-Za-z0-9]+)/);
+    var code = match ? match[1] : null;
+
+    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    var playStore = 'https://play.google.com/store/apps/details?id=com.moa.chatapp';
+    var appStore  = 'https://apps.apple.com/app/id6773242400';
+    var storeUrl  = isIOS ? appStore : playStore;
+    var deeplink  = code ? ('moa://join?code=' + code) : null;
+
+    document.getElementById('installBtn').href = storeUrl;
+
+    if (deeplink) {
+      document.getElementById('openBtn').href = deeplink;
+      // 앱 설치 시 자동 오픈 시도 (500ms 후)
+      var opened = false;
+      setTimeout(function() {
+        opened = true;
+        window.location.href = deeplink;
+      }, 500);
+      // 딥링크 열기 실패(앱 미설치) → 스토어로 fallback (2.8초 후)
+      setTimeout(function() {
+        if (!document.hidden) {
+          window.location.href = storeUrl;
+        }
+      }, 2800);
+    } else {
+      // /invite/ 경로가 아니면 버튼 숨기고 스토어만
+      document.getElementById('msg').textContent = 'MOA Chat';
+      document.getElementById('openBtn').style.display = 'none';
+      document.getElementById('installBtn').textContent = '앱 다운로드';
+      document.getElementById('installBtn').href = storeUrl;
+      document.getElementById('hint').textContent = '';
+    }
+  </script>
+</body>
+</html>
