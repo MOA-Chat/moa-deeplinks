@@ -17,7 +17,7 @@
     .card {
       background: #fff;
       border-radius: 20px;
-      padding: 40px 32px;
+      padding: 40px 32px 32px;
       max-width: 360px;
       width: 90%;
       text-align: center;
@@ -31,7 +31,21 @@
       display: block;
     }
     h1 { font-size: 22px; font-weight: 700; color: #111; margin-bottom: 8px; }
-    p  { font-size: 15px; color: #666; margin-bottom: 32px; line-height: 1.5; }
+    .desc { font-size: 15px; color: #666; margin-bottom: 24px; line-height: 1.5; }
+
+    .code-box {
+      background: #f8f8f8;
+      border: 1.5px solid #e8e8e8;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .code-label { font-size: 13px; color: #999; }
+    .code-value { font-size: 20px; font-weight: 700; color: #111; letter-spacing: 3px; }
 
     .btn {
       display: block;
@@ -44,32 +58,55 @@
       cursor: pointer;
       text-decoration: none;
       margin-bottom: 12px;
+      transition: opacity 0.15s;
     }
-    .btn-primary {
-      background: #FF6B35;
+    .btn:active { opacity: 0.75; }
+    .btn-primary { background: #FF6B35; color: #fff; }
+    .btn-secondary { background: #f0f0f0; color: #333; }
+
+    .helper { font-size: 13px; color: #bbb; line-height: 1.5; }
+
+    .toast {
+      position: fixed;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.75);
       color: #fff;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      white-space: nowrap;
     }
-    .btn-secondary {
-      background: #f0f0f0;
-      color: #333;
-    }
-    .note { font-size: 13px; color: #aaa; margin-top: 8px; }
+    .toast.show { opacity: 1; }
   </style>
 </head>
 <body>
   <div class="card">
     <img class="icon" src="icon.png" alt="MOA">
     <h1>MOA 그룹 초대</h1>
-    <p id="desc">초대 링크를 받았습니다.<br>아래 버튼으로 참여하세요.</p>
+    <p class="desc" id="desc">초대 링크를 받았습니다.<br>아래 버튼으로 참여하세요.</p>
 
-    <button class="btn btn-primary" id="openBtn">앱으로 열기</button>
-    <a class="btn btn-secondary" id="downloadBtn" href="#">앱 다운로드</a>
-    <p class="note" id="note"></p>
+    <div class="code-box" id="codeBox" style="display:none">
+      <span class="code-label">초대 코드</span>
+      <span class="code-value" id="codeText"></span>
+    </div>
+
+    <button class="btn btn-primary" id="openBtn">초대받기</button>
+    <button class="btn btn-secondary" id="copyBtn" style="display:none">초대 코드 복사하기</button>
+
+    <p class="helper" id="helper" style="display:none">
+      앱이 열리지 않으면 코드를 복사해 앱에서 직접 입력하세요.
+    </p>
   </div>
+
+  <div class="toast" id="toast">초대 코드가 복사되었습니다.</div>
 
   <script>
     // URL에서 초대 코드 추출
-    // 형식: /invite/CODE 또는 ?code=CODE
     var code = null;
     var pathMatch = window.location.pathname.match(/\/invite\/([a-zA-Z0-9_-]+)/);
     if (pathMatch) {
@@ -79,45 +116,62 @@
       if (queryMatch) code = queryMatch[1];
     }
 
-    // 플랫폼 감지
     var ua = navigator.userAgent || '';
     var isIOS = /iphone|ipad|ipod/i.test(ua);
     var isAndroid = /android/i.test(ua);
-
     var playStoreUrl = 'https://play.google.com/store/apps/details?id=com.moa.chatapp';
     var appStoreUrl  = 'https://apps.apple.com/app/id6773242400';
     var storeUrl = isIOS ? appStoreUrl : playStoreUrl;
 
-    // 다운로드 버튼
-    document.getElementById('downloadBtn').href = storeUrl;
+    if (code) {
+      document.getElementById('codeBox').style.display = 'flex';
+      document.getElementById('codeText').textContent = code;
+      document.getElementById('copyBtn').style.display = 'block';
+      document.getElementById('helper').style.display = 'block';
+    } else {
+      document.getElementById('desc').innerHTML = '유효하지 않은 초대 링크입니다.';
+      document.getElementById('openBtn').style.display = 'none';
+    }
 
-    // 앱으로 열기 버튼
+    // 초대받기 버튼: 앱 딥링크 시도 → 앱 없으면 스토어
     document.getElementById('openBtn').addEventListener('click', function() {
-      if (!code) {
-        window.location.href = storeUrl;
-        return;
-      }
-
+      if (!code) { window.location.href = storeUrl; return; }
       var appUrl = 'gchat://invite?code=' + code;
-
-      // 앱 실행 시도
       window.location.href = appUrl;
-
-      // 1.5초 후 앱이 열리지 않으면 스토어로 이동
       var fallback = setTimeout(function() {
         window.location.href = storeUrl;
       }, 1500);
-
-      // 페이지가 blur되면 앱이 열린 것 → 타임아웃 취소
       window.addEventListener('blur', function() {
         clearTimeout(fallback);
       }, { once: true });
     });
 
-    // 코드 없으면 안내 변경
-    if (!code) {
-      document.getElementById('desc').textContent = '유효하지 않은 초대 링크입니다.';
-      document.getElementById('openBtn').style.display = 'none';
+    // 복사하기 버튼
+    document.getElementById('copyBtn').addEventListener('click', function() {
+      if (!code) return;
+      var toast = document.getElementById('toast');
+      function showToast() {
+        toast.classList.add('show');
+        setTimeout(function() { toast.classList.remove('show'); }, 2000);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(showToast).catch(function() {
+          fallbackCopy(code); showToast();
+        });
+      } else {
+        fallbackCopy(code); showToast();
+      }
+    });
+
+    function fallbackCopy(text) {
+      var el = document.createElement('textarea');
+      el.value = text;
+      el.style.position = 'fixed';
+      el.style.opacity = '0';
+      document.body.appendChild(el);
+      el.focus(); el.select();
+      try { document.execCommand('copy'); } catch(e) {}
+      document.body.removeChild(el);
     }
   </script>
 </body>
