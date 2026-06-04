@@ -88,7 +88,6 @@
   <div class="card">
     <img class="icon" src="icon.png" alt="MOA">
     <h1>MOA 그룹 초대</h1>
-    <p class="desc" id="desc">초대 링크를 받았습니다.<br>아래 버튼으로 참여하세요.</p>
 
     <div class="code-box" id="codeBox" style="display:none">
       <span class="code-label">초대 코드</span>
@@ -97,10 +96,6 @@
 
     <button class="btn btn-primary" id="openBtn">초대받기</button>
     <button class="btn btn-secondary" id="copyBtn" style="display:none">초대 코드 복사하기</button>
-
-    <p class="helper" id="helper" style="display:none">
-      앱이 열리지 않으면 코드를 복사해 앱에서 직접 입력하세요.
-    </p>
   </div>
 
   <div class="toast" id="toast">초대 코드가 복사되었습니다.</div>
@@ -127,9 +122,7 @@
       document.getElementById('codeBox').style.display = 'flex';
       document.getElementById('codeText').textContent = code;
       document.getElementById('copyBtn').style.display = 'block';
-      document.getElementById('helper').style.display = 'block';
     } else {
-      document.getElementById('desc').innerHTML = '유효하지 않은 초대 링크입니다.';
       document.getElementById('openBtn').style.display = 'none';
     }
 
